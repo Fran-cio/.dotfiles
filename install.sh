@@ -1,5 +1,5 @@
 #Kitty
-ln -s ~/.dotfiles/kitty.conf ./.config/kitty
+ln -s ~/.dotfiles/kitty.conf ~/.config/kitty
 #git
 ln -s ~/.dotfiles/.gitconfig ~/
 #ZSH
