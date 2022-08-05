@@ -1,0 +1,4 @@
+[submodule "vimConfig"]
+	path = custom
+	url = git@github.com:Fran-cio/VimConfig.git
+	branch = custom_nvchad
