@@ -10,7 +10,9 @@ fi
 
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
-export PATH="$HOME/.local/bin:$PATH"
+export COMPACT_HOME="$HOME/.compactc"
+export PATH="$HOME/.local/bin:/opt/homebrew/bin:/Users/francio/.cargo/bin:$COMPACT_HOME:$PATH"
+
 
 source ~/powerlevel10k/powerlevel10k.zsh-theme
 
@@ -144,9 +146,14 @@ alias cat='bat'
 alias catnl='bat -pp'
 alias catn='/bin/cat'
 
+alias poweroff='osascript -e "tell application \"System Events\" to shut down"'
+
+alias ia='gh copilot'
+
 # Plugins
-source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+#
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $HOME/.oh-my-zsh/plugins/sudo/sudo.plugin.zsh
 
 source ~/powerlevel10k/powerlevel10k.zsh-theme
@@ -156,3 +163,18 @@ source ~/powerlevel10k/powerlevel10k.zsh-theme
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+
+. "/Users/francio/.deno/env"
+export PATH="$PATH:/Users/francio/.aztec/bin"
+
+# Added by Antigravity
+export PATH="/Users/francio/.antigravity/antigravity/bin:$PATH"
+
+# pnpm
+export PNPM_HOME="/Users/francio/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
