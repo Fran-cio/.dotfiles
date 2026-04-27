@@ -1,3 +1,7 @@
+# Add deno completions to search path
+if [[ -d "$HOME/.zsh/completions" && ":$FPATH:" != *":$HOME/.zsh/completions:"* ]]; then
+  export FPATH="$HOME/.zsh/completions:$FPATH"
+fi
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -8,13 +12,61 @@ fi
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
+case "$(uname -s)" in
+  Darwin) DOTFILES_OS="macos" ;;
+  Linux) DOTFILES_OS="linux" ;;
+  *) DOTFILES_OS="unknown" ;;
+esac
+
+path_prepend() {
+  [[ -d "$1" ]] || return
+  case ":$PATH:" in
+    *":$1:"*) ;;
+    *) export PATH="$1:$PATH" ;;
+  esac
+}
+
+path_append() {
+  [[ -d "$1" ]] || return
+  case ":$PATH:" in
+    *":$1:"*) ;;
+    *) export PATH="$PATH:$1" ;;
+  esac
+}
+
+source_if_exists() {
+  [[ -r "$1" ]] && source "$1"
+}
+
+source_first() {
+  local file
+  for file in "$@"; do
+    if [[ -r "$file" ]]; then
+      source "$file"
+      return
+    fi
+  done
+}
+
+HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-}"
+for brew_prefix in /opt/homebrew /usr/local "$HOME/.linuxbrew" /home/linuxbrew/.linuxbrew; do
+  if [[ -x "$brew_prefix/bin/brew" ]]; then
+    HOMEBREW_PREFIX="$brew_prefix"
+    break
+  fi
+done
+
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
+export ZSH_CUSTOM="${ZSH_CUSTOM:-$ZSH/custom}"
 export COMPACT_HOME="$HOME/.compactc"
-export PATH="$HOME/.local/bin:/opt/homebrew/bin:/Users/francio/.cargo/bin:$COMPACT_HOME:$PATH"
+path_prepend "$HOME/.local/bin"
+path_prepend "$HOME/.cargo/bin"
+path_prepend "$COMPACT_HOME"
+[[ -n "$HOMEBREW_PREFIX" ]] && path_prepend "$HOMEBREW_PREFIX/bin"
 
 
-source ~/powerlevel10k/powerlevel10k.zsh-theme
+source_if_exists "$HOME/powerlevel10k/powerlevel10k.zsh-theme"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -84,7 +136,7 @@ source ~/powerlevel10k/powerlevel10k.zsh-theme
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git)
 
-source $ZSH/oh-my-zsh.sh
+source_if_exists "$ZSH/oh-my-zsh.sh"
 
 # User configuration
 
@@ -136,45 +188,73 @@ alias vi=nvim
 alias vim=nvim 
 
 # Manual aliases
-alias ll='lsd -lh --group-dirs=first'
-alias la='lsd -a --group-dirs=first'
-alias l='lsd --group-dirs=first'
-alias lla='lsd -lha --group-dirs=first'
-alias ls='lsd --group-dirs=first'
+if command -v lsd >/dev/null 2>&1; then
+  alias ll='lsd -lh --group-dirs=first'
+  alias la='lsd -a --group-dirs=first'
+  alias l='lsd --group-dirs=first'
+  alias lla='lsd -lha --group-dirs=first'
+  alias ls='lsd --group-dirs=first'
+else
+  alias ll='ls -lh'
+  alias la='ls -a'
+  alias l='ls'
+  alias lla='ls -lha'
+fi
 
-alias cat='bat'
-alias catnl='bat -pp'
+if command -v bat >/dev/null 2>&1; then
+  alias cat='bat'
+  alias catnl='bat -pp'
+elif command -v batcat >/dev/null 2>&1; then
+  alias cat='batcat'
+  alias catnl='batcat -pp'
+fi
 alias catn='/bin/cat'
 
-alias poweroff='osascript -e "tell application \"System Events\" to shut down"'
+if [[ "$DOTFILES_OS" == "macos" ]]; then
+  alias poweroff='osascript -e "tell application \"System Events\" to shut down"'
+fi
 
 alias ia='gh copilot'
 
 # Plugins
 #
-source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source /opt/homebrew/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-source $HOME/.oh-my-zsh/plugins/sudo/sudo.plugin.zsh
+source_first \
+  "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" \
+  "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" \
+  /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh \
+  /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
-source ~/powerlevel10k/powerlevel10k.zsh-theme
+source_first \
+  "$ZSH_CUSTOM/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh" \
+  "$HOMEBREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" \
+  /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh \
+  /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 
-[ -f "/home/francio/.ghcup/env" ] && . "/home/francio/.ghcup/env" # ghcup-env
+source_if_exists "$HOME/.oh-my-zsh/plugins/sudo/sudo.plugin.zsh"
+
+source_if_exists "$HOME/.ghcup/env" # ghcup-env
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 
-. "/Users/francio/.deno/env"
-export PATH="$PATH:/Users/francio/.aztec/bin"
+source_if_exists "$HOME/.deno/env"
+path_append "$HOME/.aztec/bin"
 
 # Added by Antigravity
-export PATH="/Users/francio/.antigravity/antigravity/bin:$PATH"
+path_prepend "$HOME/.antigravity/antigravity/bin"
 
 # pnpm
-export PNPM_HOME="/Users/francio/Library/pnpm"
+if [[ "$DOTFILES_OS" == "macos" ]]; then
+  export PNPM_HOME="${PNPM_HOME:-$HOME/Library/pnpm}"
+else
+  export PNPM_HOME="${PNPM_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/pnpm}"
+fi
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
+  *) [[ -d "$PNPM_HOME" ]] && export PATH="$PNPM_HOME:$PATH" ;;
 esac
 # pnpm end
+
+source_if_exists "$HOME/.zshrc.local"
