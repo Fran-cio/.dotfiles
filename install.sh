@@ -237,6 +237,26 @@ check_fzf() {
   have fzf
 }
 
+check_fzf_zsh_integration() {
+  local fzf_prefixes=()
+
+  [[ -n "${HOMEBREW_PREFIX:-}" ]] && fzf_prefixes+=("$HOMEBREW_PREFIX/opt/fzf")
+  fzf_prefixes+=(
+    /usr/local/opt/fzf
+    /usr/share/fzf
+    /usr/local/share/examples/fzf
+    /usr/share/doc/fzf/examples
+  )
+
+  local prefix
+  for prefix in "${fzf_prefixes[@]}"; do
+    [[ -r "$prefix/shell/completion.zsh" && -r "$prefix/shell/key-bindings.zsh" ]] && return 0
+    [[ -r "$prefix/completion.zsh" && -r "$prefix/key-bindings.zsh" ]] && return 0
+  done
+
+  return 1
+}
+
 check_git() {
   have git
 }
@@ -327,6 +347,19 @@ check_zsh_autosuggestions() {
 
 check_nvm() {
   [[ -s "${NVM_DIR:-$HOME/.nvm}/nvm.sh" ]]
+}
+
+check_fzf_setup() {
+  if ! check_fzf; then
+    warn "fzf binary is missing; zsh integration will stay disabled until it is installed"
+    return
+  fi
+
+  if check_fzf_zsh_integration; then
+    info "ok: fzf zsh integration detected"
+  else
+    warn "fzf is installed but its zsh completion/key bindings were not found in the supported package paths"
+  fi
 }
 
 install_kitty() {
@@ -567,6 +600,7 @@ check_apps() {
   install_package_tool "lsd" check_lsd lsd
   install_package_tool "bat" check_bat bat
   install_package_tool "fzf" check_fzf fzf
+  check_fzf_setup
 
   install_kitty
   install_shure_tech_mono_font

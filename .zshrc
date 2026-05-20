@@ -167,8 +167,6 @@ source_if_exists "$ZSH/oh-my-zsh.sh"
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
 # Set 'man' colors
 function man() {
     env \
@@ -218,6 +216,24 @@ alias ia='gh copilot'
 
 # Plugins
 #
+source_first \
+  "$HOMEBREW_PREFIX/opt/fzf/shell/completion.zsh" \
+  /usr/local/opt/fzf/shell/completion.zsh \
+  /usr/share/fzf/shell/completion.zsh \
+  /usr/local/share/examples/fzf/completion.zsh \
+  /usr/share/doc/fzf/examples/completion.zsh \
+  "$HOME/.fzf/shell/completion.zsh" \
+  "$HOME/.fzf/completion.zsh"
+
+source_first \
+  "$HOMEBREW_PREFIX/opt/fzf/shell/key-bindings.zsh" \
+  /usr/local/opt/fzf/shell/key-bindings.zsh \
+  /usr/share/fzf/shell/key-bindings.zsh \
+  /usr/local/share/examples/fzf/key-bindings.zsh \
+  /usr/share/doc/fzf/examples/key-bindings.zsh \
+  "$HOME/.fzf/shell/key-bindings.zsh" \
+  "$HOME/.fzf/key-bindings.zsh"
+
 source_first \
   "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" \
   "$HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" \
