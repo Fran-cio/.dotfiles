@@ -564,21 +564,6 @@ install_rustup() {
   fi
 }
 
-install_ghcup() {
-  if have ghcup || [[ -r "$HOME/.ghcup/env" ]]; then
-    info "ok: GHCup already installed"
-    return
-  fi
-
-  if ask "GHCup is missing. Install it with the official interactive installer?"; then
-    if run_downloaded_script https://get-ghcup.haskell.org sh; then
-      info "ok: installed GHCup"
-    else
-      warn "could not install GHCup"
-    fi
-  fi
-}
-
 check_apps() {
   if [[ "${DOTFILES_SKIP_INSTALL_CHECKS:-}" == "1" ]]; then
     info "skip: application checks disabled by DOTFILES_SKIP_INSTALL_CHECKS=1"
@@ -611,7 +596,6 @@ check_apps() {
   install_deno
   install_pnpm
   install_rustup
-  install_ghcup
 }
 
 link_file() {
